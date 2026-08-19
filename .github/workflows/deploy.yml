@@ -22,6 +22,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -34,6 +37,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify production bundle
+        run: |
+          test -f dist/index.html
+          test -n "$(find dist/assets -type f -name '*.js' -print -quit)"
+          ! grep -q 'src="/src/main.tsx"' dist/index.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -43,6 +52,10 @@ jobs:
     needs: build
 
     runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
 
     environment:
       name: github-pages
